@@ -14,13 +14,13 @@ async function get_vectors_df(filename, vector_length=300) {
 
     for await (const { fragment, fragment_val } of parse_file(filename)) {
         count++;
-        //console.log(fragment);
+        console.log(fragment);
         print_progress(`Collecting fragments... ${count}`);
         vectorizer.add_fragment(fragment);
         let row = {"fragment": fragment, "val": fragment_val};
         fragments.push(row);
     }
-
+    console.log();
     console.log('Training model...');
     vectorizer.train_model();
 }

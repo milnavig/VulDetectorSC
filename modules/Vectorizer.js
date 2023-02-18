@@ -1,5 +1,6 @@
 const w2v = require('word2vec');
 const fs = require('fs');
+const print_progress = require('./../helpers/print_progress');
 
 // Sets for operators
 const operators3 = ['<<=', '>>='];
@@ -69,7 +70,7 @@ class Vectorizer {
         for (let line of fragment) {
             const tokens = Vectorizer.tokenize_line(line);
             tokenized_fragment.push(tokens);
-            //console.log(tokens);
+            // tokenized_fragment.concat(tokens) // more correct !!!
         }
 
         return [tokenized_fragment, backwards_slice];
@@ -103,28 +104,53 @@ class Vectorizer {
 
     }
 
+    vectorize(fragment) {
+        const [tokenized_fragment, backwards_slice] = Vectorizer.tokenize_fragment(fragment);
+        let tokenized_fragment_flat = tokenized_fragment.flat();
+        const vectors = [];
+
+        for (let i = 0; i < Math.min(tokenized_fragment_flat.length, 100); i++) {
+            vectors.push(this.embeddings.getVector(tokenized_fragment_flat[i]));
+        }
+        return vectors;
+    }
+
+    vectorize_fragments(fragments_with_labels) {
+        const vectors = [];
+        let count = 0;
+        for (let {fragment, val} of fragments_with_labels) {
+            print_progress(`Processing fragments... ${++count}`);
+            const vector = this.vectorize(fragment);
+            const row = {"vector": vector, "val": val};
+            vectors.push(row);
+        }
+        return vectors;
+    }
+
     train_model() {
-        this.save_tokenized_data().then(() => {
-            
-            w2v.word2vec( __dirname + '/../data/tokenized_dataset.txt', __dirname + '/../data/vectors.txt', {
-                cbow: 1,
-                size: this.vector_length,
-                //window: 8,
-                //negative: 25,
-                //hs: 0,
-                //sample: 1e-4,
-                //threads: 20,
-                //iter: 15,
-                minCount: 1
-            }, () => {
-                w2v.loadModel(__dirname + '/../data/vectors.txt', function(err, model) {
-                    //console.log(model);
-                    
-                    let wordVec = model.getVector('library');
-                    console.log(wordVec);
-                });
+        const load_model = () => {
+            w2v.loadModel(__dirname + '/../data/vectors.txt', function(err, model) {
+                this.embeddings = model;
             });
-        });
+        }
+
+        if (!fs.existsSync(__dirname + '/../data/vectors.txt')) {
+            this.save_tokenized_data().then(() => {
+                w2v.word2vec( __dirname + '/../data/tokenized_dataset.txt', __dirname + '/../data/vectors.txt', {
+                    cbow: 1,
+                    size: this.vector_length,
+                    //window: 8,
+                    //negative: 25,
+                    //hs: 0,
+                    //sample: 1e-4,
+                    //threads: 20,
+                    //iter: 15,
+                    minCount: 1
+                }, load_model);
+            });
+        } else {
+            load_model();
+        }
     }
 }
 

@@ -23,6 +23,8 @@ async function get_vectors_df(filename, vector_length=300) {
     console.log();
     console.log('Training model...');
     vectorizer.train_model();
+
+    return vectorizer.vectorize_fragments(fragments);
 }
 
 
@@ -40,7 +42,9 @@ async function main() {
     const vector_filename = base + "_fragment_vectors.pkl";
     const vector_length = vector_dim;
 
-    get_vectors_df(dataset_filename);
+    get_vectors_df(dataset_filename, vector_length);
+
+    
 }
 
 main();

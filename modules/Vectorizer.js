@@ -110,7 +110,7 @@ class Vectorizer {
         const vectors = [];
 
         for (let i = 0; i < Math.min(tokenized_fragment_flat.length, 100); i++) {
-            vectors.push(this.embeddings.getVector(tokenized_fragment_flat[i]));
+            vectors.push(this.embeddings.getVector(tokenized_fragment_flat[i]).values);
         }
         return vectors;
     }
@@ -128,29 +128,32 @@ class Vectorizer {
     }
 
     train_model() {
-        const load_model = () => {
-            w2v.loadModel(__dirname + '/../data/vectors.txt', function(err, model) {
-                this.embeddings = model;
-            });
-        }
-
-        if (!fs.existsSync(__dirname + '/../data/vectors.txt')) {
-            this.save_tokenized_data().then(() => {
-                w2v.word2vec( __dirname + '/../data/tokenized_dataset.txt', __dirname + '/../data/vectors.txt', {
-                    cbow: 1,
-                    size: this.vector_length,
-                    //window: 8,
-                    //negative: 25,
-                    //hs: 0,
-                    //sample: 1e-4,
-                    //threads: 20,
-                    //iter: 15,
-                    minCount: 1
-                }, load_model);
-            });
-        } else {
-            load_model();
-        }
+        return new Promise((resolve, reject) => {
+            const load_model = () => {
+                w2v.loadModel(__dirname + '/../data/vectors.txt', (err, model) => {
+                    this.embeddings = model;
+                    resolve();
+                });
+            }
+    
+            if (!fs.existsSync(__dirname + '/../data/vectors.txt')) {
+                this.save_tokenized_data().then(() => {
+                    w2v.word2vec( __dirname + '/../data/tokenized_dataset.txt', __dirname + '/../data/vectors.txt', {
+                        cbow: 1,
+                        size: this.vector_length,
+                        //window: 8,
+                        //negative: 25,
+                        //hs: 0,
+                        //sample: 1e-4,
+                        //threads: 20,
+                        //iter: 15,
+                        minCount: 1
+                    }, load_model);
+                });
+            } else {
+                load_model();
+            }
+        });
     }
 }
 

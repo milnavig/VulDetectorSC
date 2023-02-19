@@ -1,20 +1,40 @@
-const tf = require('@tensorflow/tfjs');
+const http = require('http');
+const fs = require('fs');
 const path = require('path');
 const parse_file = require('./helpers/parse_file');
-const Vectorizer = require('./modules/Vectorizer');
 const print_progress = require('./helpers/print_progress');
-
 const args = require('./helpers/parse_arguments');
 
+const Vectorizer = require('./modules/Vectorizer');
+const SimpleRNN = require('./models/simple_rnn');
 
-async function get_vectors_df(filename, vector_length=300) {
+http.createServer(function(request, response) {
+    if(request.url === '/save' && request.method === 'POST') {
+        let body = '';
+        request.on('data', function(data) {
+          body += data;
+          //console.log('Partial body: ' + body)
+        });
+        request.on('end', function() {
+          //console.log('Body: ' + body)
+          fs.writeFileSync(__dirname + '/data/model', body);
+          response.end();
+        });
+    } else if(request.url === '/get' && request.method === 'GET') {
+        const data = fs.readFileSync(__dirname + '/data/model', {encoding:'utf8', flag:'r'});
+        response.write(data);
+        response.end();
+    }
+    
+}).listen(3000);
+
+async function get_vectors_data(filename, vector_length=300) {
     const fragments = [];
     let count = 0;
     vectorizer = new Vectorizer(vector_length);
 
     for await (const { fragment, fragment_val } of parse_file(filename)) {
         count++;
-        console.log(fragment);
         print_progress(`Collecting fragments... ${count}`);
         vectorizer.add_fragment(fragment);
         let row = {"fragment": fragment, "val": fragment_val};
@@ -22,7 +42,7 @@ async function get_vectors_df(filename, vector_length=300) {
     }
     console.log();
     console.log('Training model...');
-    vectorizer.train_model();
+    await vectorizer.train_model();
 
     return vectorizer.vectorize_fragments(fragments);
 }
@@ -30,7 +50,12 @@ async function get_vectors_df(filename, vector_length=300) {
 
 const { 
     dataset: dataset_filename,
-    vector_dim
+    vector_dim, 
+    batch_size, 
+    lr, 
+    epochs, 
+    dropout, 
+    threshold
 } = args; // dataset - txt file with smart contracts
 
 async function main() {
@@ -42,8 +67,20 @@ async function main() {
     const vector_filename = base + "_fragment_vectors.pkl";
     const vector_length = vector_dim;
 
-    get_vectors_df(dataset_filename, vector_length);
+    const vectors = await get_vectors_data(dataset_filename, vector_length);
+    const model = new SimpleRNN(
+        vectors, 
+        base, 
+        batch_size, 
+        lr, 
+        epochs, 
+        dropout, 
+        threshold
+    );
 
+    //await model.train();
+    await model.load_model();
+    model.test();
     
 }
 

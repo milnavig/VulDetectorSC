@@ -2,8 +2,8 @@ const tf = require('@tensorflow/tfjs');
 const getRandomInt = require('../helpers/generate_random_int');
 const train_test_split = require('../helpers/train_test_split');
 
-class SimpleRNN {
-    constructor(data, name="", batch_size, lr, epochs, dropout, threshold) {
+class Model {
+    constructor(data, name, batch_size, lr, epochs, dropout, threshold) {
         this.vectors = data;
         this.name = name;
         this.batch_size = batch_size;
@@ -12,8 +12,12 @@ class SimpleRNN {
         this.dropout = dropout;
         this.threshold = threshold;
 
-        let negative_samples = data.filter(({val}) => val === 0);
-        let positive_samples = data.filter(({val}) => val === 1);
+        this.prepare_dataset();
+    }
+
+    prepare_dataset() {
+        let negative_samples = this.vectors.filter(({val}) => val === 0);
+        let positive_samples = this.vectors.filter(({val}) => val === 1);
 
         if (negative_samples.length > positive_samples.length) {
             let negative_samples_undersampled = new Array(positive_samples.length)
@@ -27,28 +31,6 @@ class SimpleRNN {
         let resampled_vals = resampled.map(({val}) => val);
 
         [this.x_train, this.x_test, this.y_train, this.y_test] = train_test_split(resampled_vectors, resampled_vals, 0.2);
-        this.x_train = tf.tensor(this.x_train);
-        this.x_test = tf.tensor(this.x_test);
-        this.y_train = tf.oneHot(tf.tensor1d(this.y_train, 'int32'), 2);
-        this.y_test = tf.oneHot(tf.tensor1d(this.y_test, 'int32'), 2);
-        //this.x_test.print(true);
-        
-        const model = tf.sequential();
-        model.add(tf.layers.simpleRNN({units: 300, inputShape: [this.x_test.shape[1], this.x_test.shape[2]]}));
-        model.add(tf.layers.reLU());
-        model.add(tf.layers.dropout({rate: this.dropout}));
-        model.add(tf.layers.dense({units: 300}));
-        model.add(tf.layers.reLU());
-        model.add(tf.layers.dropout({rate: this.dropout}));
-        model.add(tf.layers.dense({units: 2, activation: 'softmax'}));
-        
-        model.compile({
-            optimizer: tf.train.adamax(this.lr),
-            loss: 'meanSquaredError', //categorical_crossentropy
-            metrics: ['accuracy']
-        });
-
-        this.model = model;
     }
 
     async train() {
@@ -93,4 +75,4 @@ class SimpleRNN {
     }
 }
 
-module.exports = SimpleRNN;
+module.exports = Model;

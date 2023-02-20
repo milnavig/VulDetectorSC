@@ -6,7 +6,7 @@ const print_progress = require('./helpers/print_progress');
 const args = require('./helpers/parse_arguments');
 
 const Vectorizer = require('./modules/Vectorizer');
-const SimpleRNN = require('./models/simple_rnn');
+const SimpleRNN = require('./models/SimpleRNN');
 
 /*
 http.createServer(function(request, response) {

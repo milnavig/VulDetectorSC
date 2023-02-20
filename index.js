@@ -7,6 +7,8 @@ const args = require('./helpers/parse_arguments');
 
 const Vectorizer = require('./modules/Vectorizer');
 const SimpleRNN = require('./models/SimpleRNN');
+const LSTM = require('./models/LSTM');
+const BLSTM = require('./models/BLSTM');
 
 /*
 http.createServer(function(request, response) {
@@ -59,24 +61,45 @@ const {
 } = args; // dataset - txt file with smart contracts
 
 async function main() {
-    // for await (const data of parse_file(dataset)) {
-    //     console.log(data.fragment_val);
-    // }
+    let model;
 
     const base = path.basename(dataset_filename).split('.')[0];
     const vector_filename = base + "_fragment_vectors.pkl";
     const vector_length = vector_dim;
 
     const vectors = await get_vectors_data(dataset_filename, vector_length);
-    const model = new SimpleRNN(
-        vectors, 
-        base, 
-        batch_size, 
-        lr, 
-        epochs, 
-        dropout, 
-        threshold
-    );
+
+    if (args.model === 'Simple_RNN') {
+        model = new SimpleRNN(
+            vectors, 
+            base, 
+            batch_size, 
+            lr, 
+            epochs, 
+            dropout, 
+            threshold
+        );
+    } else if (args.model === 'LSTM_Model') {
+        model = new LSTM(
+            vectors, 
+            base, 
+            batch_size, 
+            lr, 
+            epochs, 
+            dropout, 
+            threshold
+        );
+    } else if (args.model === 'BLSTM_Model') {
+        model = new BLSTM(
+            vectors, 
+            base, 
+            batch_size, 
+            lr, 
+            epochs, 
+            dropout, 
+            threshold
+        );
+    } 
 
     await model.train();
     //await model.load_model();

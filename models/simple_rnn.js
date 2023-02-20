@@ -32,16 +32,8 @@ class SimpleRNN {
         this.y_train = tf.oneHot(tf.tensor1d(this.y_train, 'int32'), 2);
         this.y_test = tf.oneHot(tf.tensor1d(this.y_test, 'int32'), 2);
         //this.x_test.print(true);
-        //this.y_test.print();
         
-        // this.x_train = this.x_train.map(vector => tf.tensor(vector));
-        // this.x_test = this.x_test.map(vector => tf.tensor(vector));
-        // this.y_train = tf.oneHot(tf.tensor1d(this.y_train, 'int32'), 2);
-        // this.y_test = tf.oneHot(tf.tensor1d(this.y_test, 'int32'), 2);
-        
-
         const model = tf.sequential();
-        //model.add(tf.layers.simpleRNN({units: 300, inputShape: [this.x_test[0].shape[0], this.x_test[0].shape[1]]}));
         model.add(tf.layers.simpleRNN({units: 300, inputShape: [this.x_test.shape[1], this.x_test.shape[2]]}));
         model.add(tf.layers.reLU());
         model.add(tf.layers.dropout({rate: this.dropout}));
@@ -66,18 +58,38 @@ class SimpleRNN {
             //classWeight: this.class_weight
         });
         
-        await this.model.save('http://localhost:3000/save');
+        //await this.model.save('http://localhost:3000/save');
 
         return history;
     }
 
     async load_model() {
-        this.model = await tf.loadLayersModel('http://localhost:3000/get');
+        //this.model = await tf.loadLayersModel('http://localhost:3000/get');
     }
 
     test() {
         const result = this.model.evaluate(this.x_test, this.y_test, {batchSize: this.batch_size});
+        //console.log('Accuracy: ');
+        //result[1].print();
+
+        let predictions = this.model.predict(this.x_test, {batchSize: this.batch_size});
+        //predictions.print(); // [[0.0031147, 0.9968852], [0.0031492, 0.9968508]]
+        predictions = predictions.round().argMax(1);
+
+        let out = tf.math.confusionMatrix(this.y_test.argMax(1), predictions, 2);
+        //out.print();
+        out = out.dataSync();
+
+        const [tn, fp, fn, tp] = out;
         
+        console.log('Accuracy: ', (tp + tn) / (tp + tn + fp + fn));
+        console.log('False positive rate(FPR): ', fp / (fp + tn));
+        console.log('False negative rate(FNR): ', fn / (fn + tp));
+        const recall = tp / (tp + fn);
+        console.log('Recall(TPR): ', recall);
+        const precision = tp / (tp + fp);
+        console.log('Precision: ', precision);
+        console.log('F1 score: ', (2 * precision * recall) / (precision + recall));
     }
 }
 

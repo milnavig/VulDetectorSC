@@ -8,15 +8,14 @@ const args = require('./helpers/parse_arguments');
 const Vectorizer = require('./modules/Vectorizer');
 const SimpleRNN = require('./models/simple_rnn');
 
+/*
 http.createServer(function(request, response) {
     if(request.url === '/save' && request.method === 'POST') {
         let body = '';
         request.on('data', function(data) {
           body += data;
-          //console.log('Partial body: ' + body)
         });
         request.on('end', function() {
-          //console.log('Body: ' + body)
           fs.writeFileSync(__dirname + '/data/model', body);
           response.end();
         });
@@ -27,6 +26,7 @@ http.createServer(function(request, response) {
     }
     
 }).listen(3000);
+*/
 
 async function get_vectors_data(filename, vector_length=300) {
     const fragments = [];
@@ -78,8 +78,8 @@ async function main() {
         threshold
     );
 
-    //await model.train();
-    await model.load_model();
+    await model.train();
+    //await model.load_model();
     model.test();
     
 }

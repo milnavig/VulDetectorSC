@@ -1,6 +1,7 @@
 const tf = require('@tensorflow/tfjs');
 const getRandomInt = require('../helpers/generate_random_int');
 const train_test_split = require('../helpers/train_test_split');
+const LossHistory = require('./../helpers/draw_loss');
 
 class Model {
     constructor(data, name, batch_size, lr, epochs, dropout, threshold) {
@@ -34,9 +35,11 @@ class Model {
     }
 
     async train() {
+        const loss_history = new LossHistory();
         const history = await this.model.fit(this.x_train, this.y_train, {
             batchSize: this.batch_size,
             epochs: this.epochs,
+            callbacks: [loss_history],
             //classWeight: this.class_weight
         });
         

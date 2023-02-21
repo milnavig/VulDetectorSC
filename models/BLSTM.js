@@ -18,7 +18,8 @@ class BLSTM extends Model {
         const model = tf.sequential();
 
         model.add(tf.layers.bidirectional({
-            layer: tf.layers.lstm({units: 300, inputShape: [this.x_test.shape[1], this.x_test.shape[2]]})
+            layer: tf.layers.lstm({units: 300, inputShape: [this.x_test.shape[1], this.x_test.shape[2]]}),
+            inputShape: [this.x_test.shape[1], this.x_test.shape[2]]
         }));
         model.add(tf.layers.reLU());
         model.add(tf.layers.dropout({rate: this.dropout}));

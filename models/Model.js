@@ -39,9 +39,16 @@ class Model {
         const history = await this.model.fit(this.x_train, this.y_train, {
             batchSize: this.batch_size,
             epochs: this.epochs,
-            callbacks: [loss_history],
+            callbacks: {
+                onTrainBegin: loss_history.onTrainBegin.bind(loss_history),
+                onBatchEnd: loss_history.onBatchEnd.bind(loss_history),
+                onEpochEnd: loss_history.onEpochEnd.bind(loss_history),
+                onTrainEnd: loss_history.onTrainEnd.bind(loss_history),
+            },
             //classWeight: this.class_weight
         });
+
+        //loss_history.loss_plot('batch');
         
         //await this.model.save('http://localhost:3000/save');
 

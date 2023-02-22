@@ -72,7 +72,7 @@ async function main() {
     if (args.model === 'Simple_RNN') {
         model = new SimpleRNN(
             vectors, 
-            base, 
+            args.model, 
             batch_size, 
             lr, 
             epochs, 
@@ -82,7 +82,7 @@ async function main() {
     } else if (args.model === 'LSTM_Model') {
         model = new LSTM(
             vectors, 
-            base, 
+            args.model, 
             batch_size, 
             lr, 
             epochs, 
@@ -92,7 +92,7 @@ async function main() {
     } else if (args.model === 'BLSTM_Model') {
         model = new BLSTM(
             vectors, 
-            base, 
+            args.model, 
             batch_size, 
             lr, 
             epochs, 
@@ -101,8 +101,8 @@ async function main() {
         );
     } 
 
+    await model.create_model();
     await model.train();
-    //await model.load_model();
     model.test();
     
 }

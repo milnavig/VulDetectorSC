@@ -1,4 +1,6 @@
 const tf = require('@tensorflow/tfjs');
+require('@tensorflow/tfjs-node');
+const fs = require('fs');
 const getRandomInt = require('../helpers/generate_random_int');
 const train_test_split = require('../helpers/train_test_split');
 const LossHistory = require('./../helpers/draw_loss');
@@ -35,28 +37,32 @@ class Model {
     }
 
     async train() {
-        const loss_history = new LossHistory();
-        const history = await this.model.fit(this.x_train, this.y_train, {
-            batchSize: this.batch_size,
-            epochs: this.epochs,
-            callbacks: {
-                onTrainBegin: loss_history.onTrainBegin.bind(loss_history),
-                onBatchEnd: loss_history.onBatchEnd.bind(loss_history),
-                onEpochEnd: loss_history.onEpochEnd.bind(loss_history),
-                onTrainEnd: loss_history.onTrainEnd.bind(loss_history),
-            },
-            //classWeight: this.class_weight
-        });
+        if (fs.existsSync(`${__dirname}/../data/${this.name.toLowerCase()}/weights.bin`)) {
+            return;
+        } else {
+            const loss_history = new LossHistory();
+            const history = await this.model.fit(this.x_train, this.y_train, {
+                batchSize: this.batch_size,
+                epochs: this.epochs,
+                callbacks: {
+                    onTrainBegin: loss_history.onTrainBegin.bind(loss_history),
+                    onBatchEnd: loss_history.onBatchEnd.bind(loss_history),
+                    onEpochEnd: loss_history.onEpochEnd.bind(loss_history),
+                    onTrainEnd: loss_history.onTrainEnd.bind(loss_history),
+                },
+                //classWeight: this.class_weight
+            });
 
-        //loss_history.loss_plot('batch');
-        
-        //await this.model.save('http://localhost:3000/save');
+            //loss_history.loss_plot('batch');
+            
+            await this.model.save(`file://${__dirname}/../data/${this.name.toLowerCase()}`);
 
-        return history;
+            return history;
+        }
     }
 
     async load_model() {
-        //this.model = await tf.loadLayersModel('http://localhost:3000/get');
+        this.model = await tf.loadLayersModel(`file://${__dirname}/../data/${this.name.toLowerCase()}/model.json`);
     }
 
     test() {

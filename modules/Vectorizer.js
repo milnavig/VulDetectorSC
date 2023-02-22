@@ -124,6 +124,7 @@ class Vectorizer {
             const row = {"vector": vector, "val": val};
             vectors.push(row);
         }
+        console.log('\n');
         return vectors;
     }
 

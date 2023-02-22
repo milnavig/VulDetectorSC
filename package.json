@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "clean": "node ./DatasetGenerator/clean_fragment.js"
   },
   "author": "",
   "license": "ISC",

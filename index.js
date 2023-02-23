@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const parse_file = require('./helpers/parse_file');
 const print_progress = require('./helpers/print_progress');
 const args = require('./helpers/parse_arguments');
@@ -28,7 +29,6 @@ async function get_vectors_data(filename, vector_length=300) {
     return vectorizer.vectorize_fragments(fragments);
 }
 
-
 const { 
     dataset: dataset_filename,
     vector_dim, 
@@ -43,10 +43,29 @@ async function main() {
     let model;
 
     const base = path.basename(dataset_filename).split('.')[0];
-    const vector_filename = base + "_fragment_vectors.pkl";
+    const vector_filename = base + "_vectorized.json";
     const vector_length = vector_dim;
+    let vectors;
 
-    const vectors = await get_vectors_data(dataset_filename, vector_length);
+    if (fs.existsSync(`${__dirname}/data/${vector_filename}`)) {
+        const data = await fs.readFile(`${__dirname}/data/${vector_filename}`);
+        vectors = JSON.parse(data);
+    } else {
+        vectors = await get_vectors_data(dataset_filename, vector_length);
+
+        let buffer = new Buffer.from(JSON.stringify(vectors));
+        fs.open(`${__dirname}/data/${vector_filename}`, 'a', (err, fd) => {
+            if (err) {
+                console.log('Can`t open file');
+            } else {
+                fs.write(fd, buffer, 0, buffer.length, null, (err, writtenbytes) => {
+                    if (err) {
+                        console.log('Can`t write to file');
+                    }
+                });
+            }
+        });
+    }
 
     if (args.model === 'Simple_RNN') {
         model = new SimpleRNN(

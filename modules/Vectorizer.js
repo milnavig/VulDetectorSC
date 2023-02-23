@@ -101,7 +101,6 @@ class Vectorizer {
     add_fragment(fragment) {
         const [tokenized_fragment, backwards_slice] = Vectorizer.tokenize_fragment(fragment);
         this.fragments.push(tokenized_fragment);
-
     }
 
     vectorize(fragment) {

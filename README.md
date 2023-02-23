@@ -21,6 +21,10 @@ To run BLSTM model:
 ```
 npm start -- -D 'train_data/reentrancy_1671.txt' -M 'BLSTM_Model' -d 0.2 -th 0.5
 ```
+To run SimpleRNNSingleOutput_Model model:
+```
+npm start -- -D 'train_data/reentrancy_1671.txt' -M 'SimpleRNNSingleOutput_Model' -d 0.2 -th 0.5
+```
 
 ## CLI arguments: 
 1. `-D` or `--dataset` to send dataset;

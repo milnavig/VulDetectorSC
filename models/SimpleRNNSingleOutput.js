@@ -13,8 +13,8 @@ class SimpleRNNSingleOutput extends Model {
     async create_model() {
         this.x_train = tf.tensor(this.x_train);
         this.x_test = tf.tensor(this.x_test);
-        this.y_train = tf.oneHot(tf.tensor1d(this.y_train, 'int32'), 2);
-        this.y_test = tf.oneHot(tf.tensor1d(this.y_test, 'int32'), 2);
+        this.y_train = tf.tensor1d(this.y_train, 'int32');
+        this.y_test = tf.tensor1d(this.y_test, 'int32');
 
         if (fs.existsSync(`${__dirname}/../data/${this.name.toLowerCase()}/model.json`)) {
             await this.load_model();
@@ -43,6 +43,10 @@ class SimpleRNNSingleOutput extends Model {
         }
     }
 
+    test() {
+        
+    }
+
     calculate_roc() { // calculate ROC curve
         let current_threshold = 0;
         const step = 0.1;
@@ -53,13 +57,16 @@ class SimpleRNNSingleOutput extends Model {
         while (current_threshold <= 1) {
             let current_predictions = predictions.map(p => p >= current_threshold ? 1 : 0);
 
-            let out = tf.math.confusionMatrix(this.y_test.argMax(1), tf.tensor(current_predictions), 2);
+            let out = tf.math.confusionMatrix(this.y_test, tf.tensor(current_predictions), 2);
             out = out.dataSync();
 
             const [tn, fp, fn, tp] = out;
 
-            const fpr = fp / (fp + tn);
-            const tpr = tp / (tp + fn);
+            let fpr = fp / (fp + tn);
+            let tpr = tp / (tp + fn);
+
+            fpr = Number.isNaN(fpr) ? 0 : fpr;
+            tpr = Number.isNaN(tpr) ? 0 : tpr;
 
             fpr_array.push(fpr);
             tpr_array.push(tpr);
@@ -71,6 +78,7 @@ class SimpleRNNSingleOutput extends Model {
         }
         
         draw_roc(fpr_array, tpr_array);
+        //draw_roc([1, 0.1523, 0], [1, 0.7485, 0]);
     }
 }
 

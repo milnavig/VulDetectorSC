@@ -93,7 +93,7 @@ async function main() {
     await model.create_model();
     await model.train();
     model.test();
-    model?.calculate_roc();
+    //model?.calculate_roc(); // draw ROC curve for the model
     
 }
 

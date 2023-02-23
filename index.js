@@ -1,5 +1,3 @@
-const http = require('http');
-const fs = require('fs');
 const path = require('path');
 const parse_file = require('./helpers/parse_file');
 const print_progress = require('./helpers/print_progress');
@@ -9,26 +7,7 @@ const Vectorizer = require('./modules/Vectorizer');
 const SimpleRNN = require('./models/SimpleRNN');
 const LSTM = require('./models/LSTM');
 const BLSTM = require('./models/BLSTM');
-
-/*
-http.createServer(function(request, response) {
-    if(request.url === '/save' && request.method === 'POST') {
-        let body = '';
-        request.on('data', function(data) {
-          body += data;
-        });
-        request.on('end', function() {
-          fs.writeFileSync(__dirname + '/data/model', body);
-          response.end();
-        });
-    } else if(request.url === '/get' && request.method === 'GET') {
-        const data = fs.readFileSync(__dirname + '/data/model', {encoding:'utf8', flag:'r'});
-        response.write(data);
-        response.end();
-    }
-    
-}).listen(3000);
-*/
+const SimpleRNNSingleOutput = require('./models/SimpleRNNSingleOutput');
 
 async function get_vectors_data(filename, vector_length=300) {
     const fragments = [];
@@ -99,11 +78,22 @@ async function main() {
             dropout, 
             threshold
         );
-    } 
+    } else if (args.model === 'SimpleRNNSingleOutput_Model') {
+        model = new SimpleRNNSingleOutput(
+            vectors, 
+            args.model, 
+            batch_size, 
+            lr, 
+            epochs, 
+            dropout, 
+            threshold
+        );
+    }
 
     await model.create_model();
     await model.train();
     model.test();
+    model?.calculate_roc();
     
 }
 

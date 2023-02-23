@@ -48,17 +48,18 @@ async function main() {
     let vectors;
 
     if (fs.existsSync(`${__dirname}/data/${vector_filename}`)) {
-        const data = await fs.readFile(`${__dirname}/data/${vector_filename}`);
+        const data = fs.readFileSync(`${__dirname}/data/${vector_filename}`);
         vectors = JSON.parse(data);
     } else {
         vectors = await get_vectors_data(dataset_filename, vector_length);
-
-        let buffer = new Buffer.from(JSON.stringify(vectors));
+        const vectors_json = JSON.stringify(vectors, (key, value) => {
+            return ArrayBuffer.isView(value) ? Array.from(value) : value;
+        });
         fs.open(`${__dirname}/data/${vector_filename}`, 'a', (err, fd) => {
             if (err) {
                 console.log('Can`t open file');
             } else {
-                fs.write(fd, buffer, 0, buffer.length, null, (err, writtenbytes) => {
+                fs.write(fd, vectors_json, (err, writtenbytes) => {
                     if (err) {
                         console.log('Can`t write to file');
                     }

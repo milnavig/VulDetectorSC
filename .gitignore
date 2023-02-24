@@ -1,1 +1,5 @@
 node_modules
+DatasetGenerator/input/oyente-results
+DatasetGenerator/input/contracts
+DatasetGenerator/output/reentrancy
+DatasetGenerator/output/unvulnerable

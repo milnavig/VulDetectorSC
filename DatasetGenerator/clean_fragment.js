@@ -56,12 +56,11 @@ function clean_fragment(fragment) {
             }
         }
 
-        cleaned_fragment.push(ascii_line);
+        cleaned_fragment.push(ascii_line.trim()); // remove spaces from line and push it to array of lines
     }
 
-    return cleaned_fragment;
+    return cleaned_fragment.filter(line => line !== ''); // remove empty lines and return array of lines
 }
-
 
 function test_clean_fragment() {
     let fragment = `
@@ -141,4 +140,5 @@ function test_clean_fragment() {
     console.log(clean_fragment(fragment.split('\n')));
 }
 
-test_clean_fragment();
+//test_clean_fragment();
+module.exports = clean_fragment;

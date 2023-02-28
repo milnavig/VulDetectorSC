@@ -2,7 +2,9 @@ const fs = require('fs');
 const path = require('path');
 
 const resultsFolder = __dirname + '/input/oyente-results/'; // results of Oyente tool
+//const resultsFolder = 'C:/Users/alexa/Desktop/dissertation/OyenteResultsParser/smartbugs-wild-results/';
 const contractsFolder = __dirname + '/input/contracts/'; // contracts
+//const contractsFolder = 'C:/Users/alexa/Desktop/dissertation/OyenteResultsParser/smartbugs-wild/';
 const reentrancyFolder = __dirname + '/output/reentrancy/'; // list of vulnerable smart-contracts
 const unvulnerableFolder = __dirname + '/output/unvulnerable/'; // list of unvulnerable smart-contracts
 const file = '/result.log'; // the file where Oyente results are stored
@@ -16,21 +18,31 @@ function bufferFile(relPath) {
     return fs.readFileSync(path.resolve(__dirname, relPath));
 }
 
-function findReentrencyContracts(folders) {
+function findReentrencyContracts(folders, num = 100) {
+    let counter = num;
     for (let folder of folders) {
+        if (counter == 0) {
+            break;
+        }
         let buffer = bufferFile(resultsFolder + folder + file);
         let result = buffer.toString();
         // check if contact has reentrancy vulnerability
         if (result.includes('INFO:symExec:	  Re-Entrancy Vulnerability: 		 True')) {
             fs.copyFile(contractsFolder + folder + '.sol', reentrancyFolder + folder + '.sol', (err) => {
                 console.log('File was not found!');
+                counter++;
             }); // save contract to reentrency folder
         }
+        counter--;
     }
 }
 
-function findUnvulnerableContracts(folders) {
+function findUnvulnerableContracts(folders, num = 100) {
+    let counter = num;
     for (let folder of folders) {
+        if (counter == 0) {
+            break;
+        }
         let buffer = bufferFile(resultsFolder + folder + file);
         let result = buffer.toString();
         if (!result.includes('INFO:symExec:	  Re-Entrancy Vulnerability: 		 True')
@@ -44,8 +56,10 @@ function findUnvulnerableContracts(folders) {
             // save to unvulnerable folder
             fs.copyFile(contractsFolder + folder + '.sol', unvulnerableFolder + folder + '.sol', (err) => {
                 console.log('File was not found!');
+                counter++;
             });
         }
+        counter--;
     }
 }
 

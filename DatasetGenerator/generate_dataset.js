@@ -1,5 +1,5 @@
 const fs = require('fs');
-const clean_fragment = require('./clean_fragment');
+const clean_fragment = require('./../helpers/clean_fragment');
 const parse_oyente_results = require('./parse_oyente_results');
 
 async function generate_dataset() {

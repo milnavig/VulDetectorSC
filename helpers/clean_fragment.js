@@ -21,12 +21,16 @@ function clean_fragment(fragment) {
     let func_count = 1;
     let var_count = 1;
 
-    const comment_reg = /\/\/[^\n\r]+?(?:\*\)|[\n\r])/g; // regular expression to search single line comments
+    const single_comment_reg = /\/\/[^\n\r]+?(?:\*\)|[\n\r])/g; // regular expression to search single line comments
+    const multiline_comment_reg = /\/\*[^]*?\*\//g; // regular expression to search multiline comments
+    fragment = fragment.replace(single_comment_reg, '\n'); // remove single line comments
+    fragment = fragment.replace(multiline_comment_reg, '\n'); // remove multiline comments
+
+    fragment = fragment.split('\n');
     const func_reg = /\b([_A-Za-z]\w*)\b(?=\s*\()/g; // regular expression to search functions
     const var_reg = /\b([_A-Za-z]\w*)\b(?:(?=\s*\w+\()|(?!\s*\w+))(?!\s*\()/g; // regular expression to search variables
 
     for (let line of fragment) {
-        line.replace(comment_reg, ''); // remove single line comments
 
         let nostr_line = line.replace(/".*?"/g, '""').replace(/'.*?'/g, "''"); // remove string literals
         let ascii_line = nostr_line.replace(/[^\x00-\x7f]/g, ''); // removed all non-ASCII symbols
@@ -59,86 +63,7 @@ function clean_fragment(fragment) {
         cleaned_fragment.push(ascii_line.trim()); // remove spaces from line and push it to array of lines
     }
 
-    return cleaned_fragment.filter(line => line !== ''); // remove empty lines and return array of lines
+    return cleaned_fragment.filter(line => line !== '').join('\n'); // remove empty lines and return array of lines
 }
 
-function test_clean_fragment() {
-    let fragment = `
-        library SafeMath {
-            function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-                if (a == 0) {
-                    return 0;
-                }
-                uint256 c = a * b;
-                assert(c / a == b);
-                return c;
-            } 
-            function div(uint256 a, uint256 b) internal pure returns (uint256) {
-                uint256 c = a / b;
-                return c;
-            }
-            // The comment around this code has been commented out.
-            function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-                assert(b <= a);
-                return a - b;
-            }
-            function add(uint256 a, uint256 b) internal pure returns (uint256) {
-                uint256 c = a + b;
-                assert(c >= a);
-                return c;
-            }
-        }
-        
-        contract Ownable {
-            address public owner = 'sss';
-        
-            event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-            
-            function Ownable() public {
-                owner = msg.sender;
-            }
-            modifier onlyOwner() {
-                require(msg.sender == owner);
-                _;
-            }
-            function transferOwnership(address newOwner) public onlyOwner {
-                require(newOwner != address(0));
-                OwnershipTransferred(owner, newOwner);
-                owner = newOwner;
-            }
-        
-        }
-        
-        contract Pausable is Ownable {
-            event Pause();
-            event Unpause();
-        
-            bool public paused = false;
-        
-            modifier whenNotPaused() {
-                require(!paused);
-                _;
-            }
-        
-            modifier whenPaused() {
-                require(paused);
-                _;
-            }
-        
-            function pause() onlyOwner whenNotPaused public {
-                paused = true;
-                Pause();
-            }
-        
-            function unpause() onlyOwner whenPaused public {
-                paused = false;
-                Unpause();
-            }
-        }
-    `;
-
-    console.log(clean_fragment(fragment.split('\n')));
-}
-
-//test_clean_fragment();
 module.exports = clean_fragment;

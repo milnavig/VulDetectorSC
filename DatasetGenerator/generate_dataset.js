@@ -14,7 +14,7 @@ async function generate_dataset() {
 
     for (let file of reentrancy_files) {
         let contract = await fs.promises.readFile(`${reentrancy_folder}/${file}`);
-        contract = clean_fragment(contract.toString().split('\n')).join('\n');
+        contract = clean_fragment(contract.toString());
         writeStream.write(`${++counter} ${file}\n`);
         writeStream.write(contract + '\n');
         writeStream.write('1\n');
@@ -25,7 +25,7 @@ async function generate_dataset() {
 
     for (let file of unvulnerable_files) {
         let contract = await fs.promises.readFile(`${unvulnerable_folder}/${file}`);
-        contract = clean_fragment(contract.toString().split('\n')).join('\n');
+        contract = clean_fragment(contract.toString());
         writeStream.write(`${++counter} ${file}\n`);
         writeStream.write(contract + '\n');
         writeStream.write('0\n');

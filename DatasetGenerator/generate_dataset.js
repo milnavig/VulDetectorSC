@@ -12,7 +12,7 @@ async function generate_dataset(vul_size, unvul_size) {
 
     let reentrancy_files = await fs.promises.readdir(reentrancy_folder);
 
-    (reentrancy_files.length > vul_size) ? reentrancy_files = reentrancy_files.slice(vul_size) : null;
+    (reentrancy_files.length > vul_size) ? reentrancy_files = reentrancy_files.slice(0, vul_size) : null;
 
     for (let file of reentrancy_files) {
         let contract = await fs.promises.readFile(`${reentrancy_folder}/${file}`);
@@ -25,7 +25,7 @@ async function generate_dataset(vul_size, unvul_size) {
 
     let unvulnerable_files = await fs.promises.readdir(unvulnerable_folder);
 
-    (unvulnerable_files.length > unvul_size) ? unvulnerable_files = unvulnerable_files.slice(unvul_size) : null;
+    (unvulnerable_files.length > unvul_size) ? unvulnerable_files = unvulnerable_files.slice(0, unvul_size) : null;
 
     for (let file of unvulnerable_files) {
         let contract = await fs.promises.readFile(`${unvulnerable_folder}/${file}`);

@@ -17,7 +17,7 @@ async function get_vectors_data(filename, vector_length=300) {
     const fragments = [];
     let count = 0;
     const dataset_name = path.basename(dataset_filename).split('.')[0];
-    vectorizer = new Vectorizer(vector_length, dataset_name);
+    vectorizer = new Vectorizer(vector_length, dataset_name); // instance of Vectorizer class
 
     for await (const { fragment, fragment_val } of parse_file(filename)) {
         count++;
@@ -34,9 +34,9 @@ async function get_vectors_data(filename, vector_length=300) {
 }
 
 function check_contract(contract_filename, model) {
-    if (fs.existsSync(`${__dirname}/samples/${contract_filename}`)) {
-        let contract = fs.readFileSync(`${__dirname}/samples/${contract_filename}`);
-        let fragment = clean_fragment(contract);
+    if (fs.existsSync(`${__dirname}/${contract_filename}`)) {
+        let contract = fs.readFileSync(`${__dirname}/${contract_filename}`);
+        let fragment = clean_fragment(contract.toString());
         let fragment_vector = vectorizer.vectorize(fragment);
         model.test_fragment(fragment_vector);
     }
@@ -64,6 +64,10 @@ async function main() {
     if (fs.existsSync(`${__dirname}/data/${vector_filename}`)) {
         const data = fs.readFileSync(`${__dirname}/data/${vector_filename}`);
         vectors = JSON.parse(data);
+
+        // refactor code
+        vectorizer = new Vectorizer(vector_length, base); // instance of Vectorizer class
+        await vectorizer.train_model();
     } else {
         vectors = await get_vectors_data(dataset_filename, vector_length);
         const vectors_json = JSON.stringify(vectors, (key, value) => {
@@ -129,7 +133,6 @@ async function main() {
     //model.test();
     //model?.calculate_roc(); // draw ROC curve for the model
     check_contract(contract_filename, model);
-    
 }
 
 main();

@@ -110,7 +110,8 @@ class Vectorizer {
         const vectors = [];
 
         for (let i = 0; i < Math.min(tokenized_fragment_flat.length, 100); i++) {
-            vectors.push(this.embeddings.getVector(tokenized_fragment_flat[i]).values);
+            vectors.push(this.embeddings.getVector(tokenized_fragment_flat[i])?.values 
+                ?? new Float32Array(this.vector_length).fill(0));
         }
         return vectors;
     }

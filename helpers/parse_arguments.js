@@ -49,7 +49,7 @@ program
     .addOption(new Option('-th, --threshold <number>', 'Threshold')
         .default(0.5)
         .argParser(myParseFloat))
-    .addOption(new Option('-C, --contract <path>', 'Smart contract'));
+    .addOption(new Option('-c, --contract <path>', 'Smart contract'));
 
 program.parse();
 const options = program.opts();

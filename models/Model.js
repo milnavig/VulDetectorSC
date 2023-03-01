@@ -91,8 +91,8 @@ class Model {
     }
 
     test_fragment(fragment_vector) {
-        let prediction = this.model.predict(tf.tensor(fragment_vector), {batchSize: this.batch_size});
-        console.log(prediction);
+        let prediction = this.model.predict(tf.tensor([fragment_vector]), {batchSize: this.batch_size});
+        prediction.print();
         return prediction;
     }
 }

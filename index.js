@@ -16,7 +16,8 @@ let vectorizer; // instance of Vectorizer class
 async function get_vectors_data(filename, vector_length=300) {
     const fragments = [];
     let count = 0;
-    vectorizer = new Vectorizer(vector_length);
+    const dataset_name = path.basename(dataset_filename).split('.')[0];
+    vectorizer = new Vectorizer(vector_length, dataset_name);
 
     for await (const { fragment, fragment_val } of parse_file(filename)) {
         count++;

@@ -20,9 +20,10 @@ const operators1 = [
 
 // vectorize the fragments
 class Vectorizer {
-    constructor(vector_length) {
+    constructor(vector_length, dataset_name) {
         this.fragments = [];
         this.vector_length = vector_length;
+        this.dataset_name = dataset_name;
         this.forward_slices = 0;
         this.backward_slices = 0;
     }
@@ -78,7 +79,7 @@ class Vectorizer {
 
     save_tokenized_data() {
         return new Promise((resolve, reject) => {
-            let writeStream = fs.createWriteStream('./data/tokenized_dataset.txt');
+            let writeStream = fs.createWriteStream(`./data/${this.dataset_name}_tokenized_dataset.txt`);
 
             for (let fragment of this.fragments) {
                 for (let line of fragment) {
@@ -130,15 +131,16 @@ class Vectorizer {
     train_model() {
         return new Promise((resolve, reject) => {
             const load_model = () => {
-                w2v.loadModel(__dirname + '/../data/vectors.txt', (err, model) => {
+                w2v.loadModel(__dirname + `/../data/${this.dataset_name}_vectors.txt`, (err, model) => {
                     this.embeddings = model;
                     resolve();
                 });
             }
     
-            if (!fs.existsSync(__dirname + '/../data/vectors.txt')) {
+            if (!fs.existsSync(__dirname + `/../data/${this.dataset_name}_vectors.txt`)) {
                 this.save_tokenized_data().then(() => {
-                    w2v.word2vec( __dirname + '/../data/tokenized_dataset.txt', __dirname + '/../data/vectors.txt', {
+                    w2v.word2vec(__dirname + `/../data/${this.dataset_name}_tokenized_dataset.txt`, 
+                        __dirname + `/../data/${this.dataset_name}_vectors.txt`, {
                         cbow: 1,
                         size: this.vector_length,
                         //window: 8,

@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const parse_file = require('./helpers/parse_file');
 const print_progress = require('./helpers/print_progress');
+const clean_fragment = require('./helpers/clean_fragment');
 const args = require('./helpers/parse_arguments');
 
 const Vectorizer = require('./modules/Vectorizer');
@@ -9,6 +10,8 @@ const SimpleRNN = require('./models/SimpleRNN');
 const LSTM = require('./models/LSTM');
 const BLSTM = require('./models/BLSTM');
 const SimpleRNNSingleOutput = require('./models/SimpleRNNSingleOutput');
+
+let vectorizer; // instance of Vectorizer class
 
 async function get_vectors_data(filename, vector_length=300) {
     const fragments = [];
@@ -29,8 +32,18 @@ async function get_vectors_data(filename, vector_length=300) {
     return vectorizer.vectorize_fragments(fragments);
 }
 
+function check_contract(contract_filename, model) {
+    if (fs.existsSync(`${__dirname}/samples/${contract_filename}`)) {
+        let contract = fs.readFileSync(`${__dirname}/samples/${contract_filename}`);
+        let fragment = clean_fragment(contract);
+        let fragment_vector = vectorizer.vectorize(fragment);
+        model.test_fragment(fragment_vector);
+    }
+}
+
 const { 
     dataset: dataset_filename,
+    contract: contract_filename,
     vector_dim, 
     batch_size, 
     lr, 

@@ -27,7 +27,7 @@ program
     .description('CLI to Smart Contracts Vulnerability Detection App')
     .addOption(new Option('-D, --dataset <path>', 'Dataset')
         .default('train_data/reentrancy_1671.txt')
-        .choices(['train_data/reentrancy_1671.txt']))
+        .choices(['train_data/reentrancy_1671.txt', 'train_data/reentrancy_50x50.txt']))
     .addOption(new Option('-M --model <model>', 'Model')
         .default('BLSTM_Model')
         .choices(['BLSTM_Model', 'LSTM_Model', 'Simple_RNN', 'SimpleRNNSingleOutput_Model']))
@@ -49,6 +49,7 @@ program
     .addOption(new Option('-th, --threshold <number>', 'Threshold')
         .default(0.5)
         .argParser(myParseFloat))
+    .addOption(new Option('-C, --contract <path>', 'Smart contract'));
 
 program.parse();
 const options = program.opts();

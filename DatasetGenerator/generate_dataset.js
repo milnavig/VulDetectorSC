@@ -2,7 +2,7 @@ const fs = require('fs');
 const clean_fragment = require('./../helpers/clean_fragment');
 const parse_oyente_results = require('./parse_oyente_results');
 
-async function generate_dataset() {
+async function generate_dataset(vul_size, unvul_size) {
     parse_oyente_results();
 
     let counter = 0;
@@ -10,7 +10,9 @@ async function generate_dataset() {
     const unvulnerable_folder = __dirname + '/output/unvulnerable';
     let writeStream = fs.createWriteStream(__dirname + '/output/dataset.txt');
 
-    const reentrancy_files = await fs.promises.readdir(reentrancy_folder);
+    let reentrancy_files = await fs.promises.readdir(reentrancy_folder);
+
+    (reentrancy_files.length > vul_size) ? reentrancy_files = reentrancy_files.slice(vul_size) : null;
 
     for (let file of reentrancy_files) {
         let contract = await fs.promises.readFile(`${reentrancy_folder}/${file}`);
@@ -21,7 +23,9 @@ async function generate_dataset() {
         writeStream.write('---------------------------------\n');
     }
 
-    const unvulnerable_files = await fs.promises.readdir(unvulnerable_folder);
+    let unvulnerable_files = await fs.promises.readdir(unvulnerable_folder);
+
+    (unvulnerable_files.length > unvul_size) ? unvulnerable_files = unvulnerable_files.slice(unvul_size) : null;
 
     for (let file of unvulnerable_files) {
         let contract = await fs.promises.readFile(`${unvulnerable_folder}/${file}`);
@@ -39,4 +43,4 @@ async function generate_dataset() {
     });
 }
 
-generate_dataset();
+generate_dataset(25, 25);

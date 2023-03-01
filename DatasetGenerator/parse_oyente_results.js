@@ -2,9 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const resultsFolder = __dirname + '/input/oyente-results/'; // results of Oyente tool
-//const resultsFolder = 'C:/Users/alexa/Desktop/dissertation/OyenteResultsParser/smartbugs-wild-results/';
 const contractsFolder = __dirname + '/input/contracts/'; // contracts
-//const contractsFolder = 'C:/Users/alexa/Desktop/dissertation/OyenteResultsParser/smartbugs-wild/';
 const reentrancyFolder = __dirname + '/output/reentrancy/'; // list of vulnerable smart-contracts
 const unvulnerableFolder = __dirname + '/output/unvulnerable/'; // list of unvulnerable smart-contracts
 const file = '/result.log'; // the file where Oyente results are stored

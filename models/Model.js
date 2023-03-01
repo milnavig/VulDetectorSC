@@ -89,6 +89,12 @@ class Model {
         console.log('Precision: ', precision);
         console.log('F1 score: ', (2 * precision * recall) / (precision + recall));
     }
+
+    test_fragment(fragment_vector) {
+        let prediction = this.model.predict(tf.tensor(fragment_vector), {batchSize: this.batch_size});
+        console.log(prediction);
+        return prediction;
+    }
 }
 
 module.exports = Model;

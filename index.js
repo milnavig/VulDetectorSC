@@ -126,8 +126,9 @@ async function main() {
 
     await model.create_model();
     await model.train();
-    model.test();
+    //model.test();
     //model?.calculate_roc(); // draw ROC curve for the model
+    check_contract(contract_filename, model);
     
 }
 

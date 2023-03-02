@@ -24,8 +24,6 @@ class Vectorizer {
         this.fragments = [];
         this.vector_length = vector_length;
         this.dataset_name = dataset_name;
-        this.forward_slices = 0;
-        this.backward_slices = 0;
     }
 
     static tokenize_line(line) {
@@ -66,15 +64,13 @@ class Vectorizer {
 
     static tokenize_fragment(fragment) {
         const tokenized_fragment = [];
-        const re = /function(\d)+/;
-        let backwards_slice = false;
         for (let line of fragment) {
             const tokens = Vectorizer.tokenize_line(line);
             tokenized_fragment.push(tokens);
             // tokenized_fragment.concat(tokens) // more correct !!!
         }
 
-        return [tokenized_fragment, backwards_slice];
+        return tokenized_fragment;
     }
 
     save_tokenized_data() {
@@ -100,12 +96,12 @@ class Vectorizer {
     }
 
     add_fragment(fragment) {
-        const [tokenized_fragment, backwards_slice] = Vectorizer.tokenize_fragment(fragment);
+        const tokenized_fragment = Vectorizer.tokenize_fragment(fragment);
         this.fragments.push(tokenized_fragment);
     }
 
     vectorize(fragment) {
-        const [tokenized_fragment, backwards_slice] = Vectorizer.tokenize_fragment(fragment);
+        const tokenized_fragment = Vectorizer.tokenize_fragment(fragment);
         let tokenized_fragment_flat = tokenized_fragment.flat();
         const vectors = [];
 

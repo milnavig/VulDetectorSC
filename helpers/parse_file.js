@@ -2,8 +2,8 @@ const fs = require('fs');
 const readline = require('readline');
 
 async function* parse_file(filename) {
-    let fragment = []
-    let fragment_val = 0
+    let fragment = [];
+    let fragment_val = 0;
 
     const fileStream = fs.createReadStream(filename);
 

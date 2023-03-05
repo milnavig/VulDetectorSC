@@ -6,9 +6,8 @@ class FragmentExtractor {
         this.code_fragments = []; // code fragment
         this.callValueArray = []; // save function W, which use call.value
         this.CFunctionArray = []; // save all functions C, which call function W
-        this.withdrawNameArray = []; // save the name of the function W, which call call.value
+        this.functionNameArray = []; // save the name of the function W, which call call.value
         this.otherFunctionArray = []; // save functions, which do not use call.value
-        this.params = []; // save parameters of function W
     }
 
     async split_function(filepath) {
@@ -44,59 +43,51 @@ class FragmentExtractor {
         const allFunctionArray = await this.split_function(filepath); // save all functions in array
 
         for (let func of allFunctionArray) {
+            let flag = 0;
             for (let func_line of func) {
                 if (func_line.includes('.call.value')) {
                     this.callValueArray.push(func);
+                    // get function name
+                    let function_name = func[0].match(/\b([_A-Za-z]\w*)\b(?:(?=\s*\w+\()|(?!\s*\w+))/g)[1];
 
-                    // get first line with parameters and find them
-                    let func_parameters = func[0].match(/[(](.*?)[)]/g);
-                    func_parameters = func_parameters[0].split(",");
-
-                    for (let func_parameter of func_parameters) {
-                        let temp = func_parameter.trim().split(' ');
-                        this.params.push(temp[temp.length - 1]); // get name of the parameter
-                    }
-
-                    // check if function is callback-function (case `function() payable`)
-                    let result_withdraw = func[0].match(/\b([_A-Za-z]\w*)\b(?:(?=\s*\w+\()|(?!\s*\w+))/)[1];
-
-                    if (result_withdraw === 'payable') {
-                        this.withdrawNameArray.push(result_withdraw);
-                    } else {
-                        this.withdrawNameArray.push(result_withdraw + '(');
-                    }
+                    this.functionNameArray.push(function_name);
+                    flag++;
                 }
             }
+
+            if (flag === 0) this.otherFunctionArray.push(func);
         }
 
+        // add functions with call.value to fragment
         for (let callValue of this.callValueArray) {
-            this.code_fragments.push(callValue);
+            this.code_fragments.push(callValue.join('\n'));
         }
 
-        for (let withdraw of this.withdrawNameArray) {
-            if (withdraw.includes('payable')) {
+        for (let functionName of this.functionNameArray) {
+            if (functionName.includes('payable')) {
                 console.log('There is no C function');
                 continue;
             }
+
             for (let otherFunction of this.otherFunctionArray) {
                 for (let line of otherFunction) {
-                    let params = line.match(/[(](.*?)[)]/)[0].split(',');
-
-                    if ((params[0] != "") && (params.length == this.params.length)) {
+                    if (line.includes(`${functionName}(`)) {
                         this.CFunctionArray.push(otherFunction);
+                        break;
                     }
                 }
             }
         }
-
+        
+        // add to fragments C function
         for (let CFunction of this.CFunctionArray) {
-            this.code_fragments.push(CFunction);
+            this.code_fragments.push(CFunction.join('\n'));
         }
 
-        console.log('Code Fragments: ', this.code_fragments);
+        console.log('Code Fragments: ', this.code_fragments.join('\n'));
         console.log('==============================================================');
 
-        return this.code_fragments;
+        return this.code_fragments.join('\n');
     }
 }
 

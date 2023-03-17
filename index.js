@@ -9,6 +9,7 @@ const Vectorizer = require('./modules/Vectorizer');
 const SimpleRNN = require('./models/SimpleRNN');
 const LSTM = require('./models/LSTM');
 const BLSTM = require('./models/BLSTM');
+const BLSTM_Attention = require('./models/BLSTM_attention');
 const SimpleRNNSingleOutput = require('./models/SimpleRNNSingleOutput');
 
 let vectorizer; // instance of Vectorizer class
@@ -108,6 +109,16 @@ async function main() {
         );
     } else if (args.model === 'BLSTM_Model') {
         model = new BLSTM(
+            vectors, 
+            args.model, 
+            batch_size, 
+            lr, 
+            epochs, 
+            dropout, 
+            threshold
+        );
+    } else if (args.model === 'BLSTM_Attention_Model') {
+        model = new BLSTM_Attention(
             vectors, 
             args.model, 
             batch_size, 

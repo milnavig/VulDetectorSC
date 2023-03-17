@@ -30,7 +30,7 @@ program
         .choices(['train_data/reentrancy_1671.txt', 'train_data/reentrancy_50x50.txt']))
     .addOption(new Option('-M --model <model>', 'Model')
         .default('BLSTM_Model')
-        .choices(['BLSTM_Model', 'LSTM_Model', 'Simple_RNN', 'SimpleRNNSingleOutput_Model']))
+        .choices(['BLSTM_Model', 'LSTM_Model', 'Simple_RNN', 'BLSTM_Attention_Model', 'SimpleRNNSingleOutput_Model']))
     .addOption(new Option('--lr <number>', 'Learning rate')
         .default(0.002)
         .argParser(myParseFloat))

@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "generate_dataset": "node ./DatasetGenerator/generate_dataset.js",
-    "fragment_extractor": "node ./modules/FragmentExtractor.js"
+    "fragment_extractor": "node ./modules/FragmentExtractor.js",
+    "graph_builder": "node ./modules/GraphBuilder.js"
   },
   "author": "",
   "license": "ISC",

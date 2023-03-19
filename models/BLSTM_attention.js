@@ -34,7 +34,7 @@ class AttentionWithContext extends tf.layers.Layer {
     */
 
     constructor (config) {
-        super(config);
+        super(config || {});
 
         this.supports_masking = true;
         this.init = tf.initializers.glorotNormal();
@@ -51,23 +51,21 @@ class AttentionWithContext extends tf.layers.Layer {
     }
 
     build(inputShape) {
-        if (inputShape !== 3) {
-            throw new Error('input shape is not equal to 3!');
-        }
+        tf.util.assert(inputShape === 3, `Invalid input rank: ${inputShape}`);
 
         this.W = this.addWeight(`${this.name}_W`, // Name of the new weight variable
             [input_shape[input_shape.length - 1], input_shape[input_shape.length - 1]], // The shape of the weight
-            'float32', // The dtype of the weight
+            undefined,
             this.init, // An initializer instance
             this.W_regularizer, // A regularizer instance
-            true, // Whether the weight should be trained via backprop or not 
+            undefined,
             this.W_constraint); // An optional trainable
         
         if (this.bias) {
             this.b = this.addWeight(`${this.name}_b`,            
                 [input_shape[input_shape.length - 1]],
-                'float32', // The dtype of the weight
                 undefined,
+                tf.initializers.zeros(),
                 this.b_regularizer,
                 undefined,
                 this.b_constraint);
@@ -75,7 +73,7 @@ class AttentionWithContext extends tf.layers.Layer {
 
         this.u = this.addWeight(`${this.name}_u`,
             [input_shape[input_shape.length - 1]],
-            'float32', // The dtype of the weight
+            undefined,
             this.init, // An initializer instance
             this.u_regularizer,
             undefined,
@@ -100,8 +98,15 @@ class AttentionWithContext extends tf.layers.Layer {
         let ait = dot_product(uit, this.u);
 
         let a = tf.exp(ait);
+
+        // apply mask after the exp. will be re-normalized next
+        if (kwargs.mask) {
+            // Cast the mask to floatX to avoid float64 upcasting in theano
+            a *= tf.cast(kwargs.mask, 'float32');
+        }
         
-        a /= tf.cast(tf.sum(a, 1, true), 'float32');
+        // a /= tf.cast(tf.sum(a, 1, true), 'float32');
+        a /= tf.cast(tf.sum(a, 1, true) + tf.backend().epsilon(), 'float32');
 
         a = tf.expandDims(a);
         let weighted_input = x * a;
@@ -127,7 +132,7 @@ class Addition extends tf.layers.Layer {
         2D tensor with shape: `(samples, features)`.
     */
     constructor (config) {
-        super(config);
+        super(config || {});
     }
 
     build(input_shape) {

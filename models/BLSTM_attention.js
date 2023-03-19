@@ -12,11 +12,20 @@ function dot_product(x, kernel) {
             kernel (): weights
         Returns:
     */
+    /*
     if (tf.getBackend() === 'tensorflow') {
         return tf.squeeze(tf.dot(x, tf.expandDims(kernel)), -1);
     } else {
         return tf.dot(x, kernel);
     }
+    */
+    // REMOVE
+    console.log(tf.squeeze(x[0], 1));
+    console.log(kernel);
+    console.log(tf.expandDims(kernel));
+
+    //return tf.squeeze(tf.dot(x[0], tf.expandDims(kernel)), -1);
+    return tf.dot(tf.squeeze(x[0], -1), kernel);
 }
 
 class AttentionWithContext extends tf.layers.Layer {
@@ -43,15 +52,15 @@ class AttentionWithContext extends tf.layers.Layer {
         this.u_regularizer = tf.regularizers.l1();
         this.b_regularizer = tf.regularizers.l1();
 
-        this.W_constraint = tf.constraints.maxNorm();
-        this.u_constraint = tf.constraints.maxNorm();
-        this.b_constraint = tf.constraints.maxNorm();
+        this.W_constraint = tf.constraints.nonNeg();
+        this.u_constraint = tf.constraints.nonNeg();
+        this.b_constraint = tf.constraints.nonNeg();
 
-        this.bias = bias;
+        this.bias = true;
     }
 
-    build(inputShape) {
-        tf.util.assert(inputShape === 3, `Invalid input rank: ${inputShape}`);
+    build(input_shape) {
+        tf.util.assert(input_shape.length === 3, `Invalid input rank: ${input_shape.length}`);
 
         this.W = this.addWeight(`${this.name}_W`, // Name of the new weight variable
             [input_shape[input_shape.length - 1], input_shape[input_shape.length - 1]], // The shape of the weight
@@ -88,14 +97,14 @@ class AttentionWithContext extends tf.layers.Layer {
     }
 
     call(x, kwargs) {
-        let uit = dot_product(x, this.W);
+        let uit = dot_product(x, this.W.read());
         
         if (this.bias) {
             uit += this.b;
         }
 
         uit = tf.tanh(uit);
-        let ait = dot_product(uit, this.u);
+        let ait = dot_product(uit, this.u.read());
 
         let a = tf.exp(ait);
 
@@ -116,6 +125,10 @@ class AttentionWithContext extends tf.layers.Layer {
 
     computeOutputShape(input_shape) {
         return [input_shape[0], input_shape[1], input_shape[2]];
+    }
+
+    static get className() {
+        return 'AttentionWithContext';
     }
 }
 
@@ -147,6 +160,10 @@ class Addition extends tf.layers.Layer {
     computeOutputShape(input_shape) {
         return [input_shape[0], this.output_dim];
     }
+
+    static get className() {
+        return 'Addition';
+    }
 }
 
 // Bidirectional LSTM neural network with attention
@@ -170,10 +187,12 @@ class BLSTM_Attention extends Model {
                 metrics: ['accuracy']
             });
         } else {
+            tf.serialization.registerClass(AttentionWithContext);
+            tf.serialization.registerClass(Addition);
             const model = tf.sequential();
 
             model.add(tf.layers.bidirectional({
-                layer: tf.layers.lstm({units: 300, inputShape: [this.x_test.shape[1], this.x_test.shape[2]]}),
+                layer: tf.layers.lstm({units: 300, returnSequences: true, inputShape: [this.x_test.shape[1], this.x_test.shape[2]]}),
                 inputShape: [this.x_test.shape[1], this.x_test.shape[2]]
             }));
             model.add(new AttentionWithContext());
